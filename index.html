@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SHIELDED - Women Safety App</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCA0WwEV5VZbUVbAgujAtxVCLeUkXuZTbY&libraries=places"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>SHIELDED</h1>
+
+        <h2>Register User</h2>
+        <form id="registration-form">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name"><br>
+            <label for="number">Number:</label>
+            <input type="text" id="number" name="number"><br>
+            <button type="submit" id="register-button">Register</button>
+        </form>
+
+        <h2>Send Your Location</h2>
+        <button type="button" id="send-location-button">Send My Location to Registered Contacts</button>
+    </div>
+
+    <div class="container">
+        <h2>Received SMS Messages</h2>
+        <ul id="sms-list"></ul>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const registrationForm = document.getElementById("registration-form");
+            const sendLocationButton = document.getElementById("send-location-button");
+
+            let userLocation = null;
+
+            // Google Maps API Geolocation
+            navigator.geolocation.getCurrentPosition(
+                position => {
+                    userLocation = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    };
+                },
+                error => {
+                    console.error("Error getting user location:", error);
+                }
+            );
+
+            registrationForm.addEventListener("submit", function(event) {
+                event.preventDefault();
+                const name = document.getElementById("name").value;
+                const number = document.getElementById("number").value;
+                registerUser(name, number);
+            });
+
+            sendLocationButton.addEventListener("click", function() {
+                sendLocation();
+            });
+
+            function registerUser(name, number) {
+                fetch('/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        number: number
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data.message);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            }
+
+            function sendLocation() {
+                const name = document.getElementById("name").value;
+                fetch('/send_location', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name: name
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data.message);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            }
+        });
+    </script>
+</body>
+</html>
+
